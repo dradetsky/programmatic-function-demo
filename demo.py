@@ -6,6 +6,7 @@ from ast import (
     Add,
     Mult,
     Load,
+    Store,
 )
 from functools import (
     partial,
@@ -34,6 +35,7 @@ Constant    = partial(ast.Constant, **fake_line_col)
 BinOp       = partial(ast.BinOp, **fake_line_col)
 Return      = partial(ast.Return, **fake_line_col)
 Call        = partial(ast.Call, **fake_line_col)
+Assign      = partial(ast.Assign, **fake_line_col)
 
 Name      = partial(ast.Name, ctx=Load(), **fake_line_col)
 Attribute = partial(ast.Attribute, ctx=Load(), **fake_line_col)
@@ -110,6 +112,20 @@ f_libcall_body = Return(
     ),
 )
 
+# x = 7
+# return x
+f_set_body = [
+    Assign(
+        targets=[
+            Name(id='x', ctx=Store())
+        ],
+        value=Constant(value=7)
+    ),
+    Return(
+        value=Name(id='x')
+    )
+]
+
 # NOTE:
 #
 # 1. The name value below is actually used in error messages, as in
@@ -123,7 +139,7 @@ def make_fn(args, body, name='who_cares_wont_check_this', namespace={}):
     fn_ast = FunctionDef(
         name=name,
         args=args,
-        body=[body],
+        body=body,
         decorator_list=[]
     )
     mod_ast = Module(body=[fn_ast])
@@ -135,23 +151,28 @@ def make_fn(args, body, name='who_cares_wont_check_this', namespace={}):
     return fn
 
 def demo():
-    f = make_fn(f_args, f_expr_body)
+    f = make_fn(f_args, [f_expr_body])
     print('f(a, b): 2*a+b')
     print(f(3,7))
     print(f(4,7))
     print(f(4,6))
-    f = make_fn(f_args, f_bif_body)
+    f = make_fn(f_args, [f_bif_body])
     print('f(a, b): a**3')
     print(f(3,7))
     print(f(4,7))
     print(f(4,6))
-    f = make_fn(f_args, f_udf_body, namespace=dict(g=g))
+    f = make_fn(f_args, [f_udf_body], namespace=dict(g=g))
     print('f(a, b): g(a)')
     print(f(3,7))
     print(f(4,7))
     print(f(4,6))
-    f = make_fn(f_no_args, f_libcall_body, namespace=dict(datetime=datetime))
+    f = make_fn(f_no_args, [f_libcall_body], namespace=dict(datetime=datetime))
     print('f(): datetime.datetime.now()')
+    print(f())
+    print(f())
+    print(f())
+    f = make_fn(f_no_args, f_set_body)
+    print('f(): x = 7 ; return x')
     print(f())
     print(f())
     print(f())
