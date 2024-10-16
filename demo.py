@@ -95,6 +95,7 @@ f_udf_body = Return(
 def g(x):
     return 5*x
 
+# return datetime.datetime.now()
 f_libcall_body = Return(
     value=Call(
         func=Attribute(
