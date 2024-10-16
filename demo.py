@@ -109,6 +109,15 @@ f_libcall_body = Return(
     ),
 )
 
+# NOTE:
+#
+# 1. The name value below is actually used in error messages, as in
+#
+#     TypeError: who_cares_wont_check_this() takes 0 positional arguments but 2 were given
+#
+# 2. It's necessary to pass in any referenced names you want to use besides the
+#    built-in names. I'd call this `environment`, but the cpython codebase uses
+#    the word `namespace` for whatever reason. Look, I just work here.
 def make_fn(args, body, name='who_cares_wont_check_this', namespace={}):
     fn_ast = FunctionDef(
         name=name,
