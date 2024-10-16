@@ -135,7 +135,7 @@ f_set_body = [
 # 2. It's necessary to pass in any referenced names you want to use besides the
 #    built-in names. I'd call this `environment`, but the cpython codebase uses
 #    the word `namespace` for whatever reason. Look, I just work here.
-def make_fn(args, body, name='who_cares_wont_check_this', namespace={}):
+def make_fn(args, body, name='who_cares_wont_check_this', namespace=vars()):
     fn_ast = FunctionDef(
         name=name,
         args=args,
@@ -161,13 +161,18 @@ def demo():
     print(f(3,7))
     print(f(4,7))
     print(f(4,6))
-    f = make_fn(f_args, [f_udf_body], namespace=dict(g=g))
+    f = make_fn(f_args, [f_udf_body])
     print('f(a, b): g(a)')
     print(f(3,7))
     print(f(4,7))
     print(f(4,6))
-    f = make_fn(f_no_args, [f_libcall_body], namespace=dict(datetime=datetime))
+    f = make_fn(f_no_args, [f_libcall_body])
     print('f(): datetime.datetime.now()')
+    print(f())
+    print(f())
+    print(f())
+    f = make_fn(f_no_args, [f_libcall_body], namespace=dict(datetime=datetime))
+    print('f(): datetime.datetime.now()  # but with manual namespace definition')
     print(f())
     print(f())
     print(f())
